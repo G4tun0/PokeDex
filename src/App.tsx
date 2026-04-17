@@ -1,18 +1,22 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import heroImg from './assets/hero.png'
-import './App.css'
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { HomePage } from '@/pages/HomePage';
+import { DetailPage } from '@/pages/DetailPage';
 
 function App() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold text-blue-600 mb-2">PokéDex</h1>
-        <p className="text-gray-500 text-sm">React + TypeScript + Tailwind OK</p>
-      </div>
-    </div>
-  )
+    <BrowserRouter>
+      <Routes>
+        {/* Ruta principal — lista de pokémon */}
+        <Route path="/" element={<HomePage />} />
+
+        {/* Ruta de detalle — recibe el nombre como parámetro */}
+        <Route path="/pokemon/:name" element={<DetailPage />} />
+
+        {/* Cualquier ruta desconocida redirige al inicio */}
+        <Route path="*" element={<Navigate to="/" replace />} />
+      </Routes>
+    </BrowserRouter>
+  );
 }
 
-export default App
+export default App;
