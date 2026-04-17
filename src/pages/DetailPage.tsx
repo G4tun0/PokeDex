@@ -3,7 +3,6 @@ import { usePokemon } from '@/hooks/usePokemon';
 import { useFavoritesStore } from '@/store/useFavoritesStore';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
 
-// Mapa de colores de fondo por tipo principal
 const TYPE_BG: Record<string, string> = {
   fire: 'bg-red-50',
   water: 'bg-blue-50',
@@ -25,7 +24,6 @@ const TYPE_BG: Record<string, string> = {
   flying: 'bg-sky-50',
 };
 
-// Colores para la barra de stats
 const statColor = (value: number): string => {
   if (value >= 100) return 'bg-green-500';
   if (value >= 60) return 'bg-yellow-400';

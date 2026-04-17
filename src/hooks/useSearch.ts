@@ -16,7 +16,6 @@ export function useSearch(): UseSearchReturn {
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState('');
 
-  // useCallback evita que la función se recree en cada render
   const search = useCallback((newQuery: string) => {
     setQuery(newQuery.trim().toLowerCase());
   }, []);
@@ -40,7 +39,6 @@ export function useSearch(): UseSearchReturn {
       setError(null);
 
       try {
-        // Busca por nombre exacto en la PokéAPI
         const pokemon = await pokemonService.getByName(query);
         if (!cancelled) setResults([pokemon]);
       } catch {

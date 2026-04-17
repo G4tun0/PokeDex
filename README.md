@@ -1,73 +1,93 @@
-# React + TypeScript + Vite
+## Arquitectura y estructura de carpetas
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+El proyecto sigue una arquitectura por capas donde cada carpeta tiene
+una única responsabilidad:
 
-Currently, two official plugins are available:
+src/
+├── api/          # Configuración HTTP (Axios, baseURL, interceptors)
+├── services/     # Lógica de negocio y llamadas a la API
+├── models/       # Interfaces y clases TypeScript (dominio)
+├── store/        # Estado global con Zustand
+├── hooks/        # Custom hooks reutilizables
+├── components/   # Componentes UI reutilizables
+├── pages/        # Vistas completas asociadas a rutas
+└── utils/        # Funciones puras auxiliares(No fue necesario en este caso)
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+**Principio aplicado:** Si la API cambia su estructura de respuesta,
+solo se modifica `services/pokemonService.ts` — los componentes
+no se enteran del cambio.
 
-## React Compiler
+---
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Decisiones técnicas
 
-## Expanding the ESLint configuration
+### ¿Por qué Vite y no Create React App?
+CRA está oficialmente deprecado desde 2023. Vite ofrece HMR
+instantáneo y tiempos de inicio menores a 300ms.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+### ¿Por qué Zustand y no Redux Toolkit?
+El estado global de esta app es simple: una lista de IDs favoritos.
+Zustand resuelve eso en 30 líneas sin boilerplate. Redux sería
+over-engineering para este scope y lo usaría
+en apps con múltiples slices y middlewares complejos.
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
+### ¿Por qué una clase Pokemon y no solo una interface?
+La clase encapsula lógica de dominio como `heightInMeters` o
+`formattedName`. Esa lógica pertenece al objeto, no a los
+componentes. Aplica el principio de encapsulación de OOP.
 
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
+### ¿Por qué separar api/ de services/?
+`api/` es infraestructura pura (configura Axios).
+`services/` es lógica de dominio (sabe qué datos pedir y cómo
+transformarlos). Si cambio de Axios a fetch nativo, solo toco `api/`.
 
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+### ¿Por qué Promise.all en la carga inicial?
+Cargar 151 pokémon en serie sería ~30 segundos (151 × 200ms).
+Con Promise.all se lanzan en paralelo y terminan en ~200ms.
+
+---
+
+## Patrones de diseño aplicados
+
+- **Singleton** — `axiosInstance` es una instancia única compartida
+- **Adapter/Mapper** — `mapToPokemon` transforma datos externos al modelo interno
+- **Repository** — `pokemonService` abstrae el origen de los datos
+- **Custom Hooks** — encapsulan lógica con estado reutilizable entre componentes
+
+---
+
+## Funcionalidades
+
+- Listado de los 151 pokémon originales
+- Búsqueda por nombre
+- Filtro por tipo (fuego, agua, planta, etc.)
+- Sistema de favoritos persistente en localStorage
+- Página de detalle con stats, altura y peso
+- Estados de carga y error en toda la app
+- Diseño responsive mobile-first
+
+---
+
+## Cómo correr el proyecto localmente
+
+```bash
+# Clonar el repositorio
+git clone [url del repo]
+cd pokedex-app
+
+# Instalar dependencias
+npm install
+
+# Correr en desarrollo
+npm run dev
+
+# Build de producción
+npm run build
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+---
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+## API utilizada
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+[PokéAPI](https://pokeapi.co/) — API pública y gratuita, sin necesidad
+de API key. Se consumen los endpoints `/pokemon` y `/pokemon/:name`.

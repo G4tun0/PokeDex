@@ -16,9 +16,6 @@ export function usePokemon(name: string): UsePokemonReturn {
   useEffect(() => {
     if (!name) return;
 
-    // Flag para evitar actualizar estado en componentes desmontados
-    // Si el componente se desmonta antes de que termine el fetch,
-    // cancelled = true evita el setState y el memory leak
     let cancelled = false;
 
     const fetchPokemon = async () => {
@@ -37,8 +34,6 @@ export function usePokemon(name: string): UsePokemonReturn {
 
     fetchPokemon();
 
-    // Cleanup function — se ejecuta cuando el componente
-    // se desmonta o cuando cambia la dependencia [name]
     return () => {
       cancelled = true;
     };

@@ -6,6 +6,7 @@ import { useSearch } from '@/hooks/useSearch';
 import { PokemonCard } from '@/components/PokemonCard';
 import { SearchBar } from '@/components/SearchBar';
 import { LoadingSpinner } from '@/components/LoadingSpinner';
+import { FilterBar } from '@/components/FilterBar';
 
 export const HomePage = () => {
   const [allPokemon, setAllPokemon] = useState<Pokemon[]>([]);
@@ -16,6 +17,7 @@ export const HomePage = () => {
 
   const { favorites } = useFavoritesStore();
   const { results, loading: searchLoading, error: searchError, search, clearResults } = useSearch();
+  const [selectedType, setSelectedType] = useState('all');
 
   // Carga inicial de los primeros 151 pokémon
   useEffect(() => {
@@ -55,11 +57,17 @@ export const HomePage = () => {
 
   // Decide qué pokémon mostrar según el estado activo
   const displayedPokemon = (): Pokemon[] => {
-    if (isSearching) return results;
-    if (showFavorites) {
-      return allPokemon.filter((p) => favorites.includes(p.id));
+    let list: Pokemon[];
+
+    if (isSearching) list = results;
+    else if (showFavorites) list = allPokemon.filter((p) => favorites.includes(p.id));
+    else list = allPokemon;
+
+    if (selectedType !== 'all') {
+      list = list.filter((p) => p.types.includes(selectedType));
     }
-    return allPokemon;
+
+    return list;
   };
 
   const pokemon = displayedPokemon();
@@ -88,6 +96,21 @@ export const HomePage = () => {
           </button>
         </div>
       </header>
+
+      {/* Filtro por tipo — solo visible cuando no hay búsqueda activa */}
+      {!isSearching && (
+        <div className="bg-white border-b border-gray-100 py-2 px-4">
+          <div className="max-w-5xl mx-auto">
+            <FilterBar
+              selectedType={selectedType}
+              onTypeChange={(type) => {
+                setSelectedType(type);
+                setShowFavorites(false);
+              }}
+            />
+          </div>
+        </div>
+      )}
 
       {/* Contenido principal */}
       <main className="max-w-5xl mx-auto px-4 py-8">
@@ -138,8 +161,8 @@ export const HomePage = () => {
             {isSearching
               ? `${pokemon.length} resultado(s) para tu búsqueda`
               : showFavorites
-              ? `${pokemon.length} pokémon favorito(s)`
-              : `${pokemon.length} pokémon`}
+                ? `${pokemon.length} pokémon favorito(s)`
+                : `${pokemon.length} pokémon`}
           </p>
         )}
 

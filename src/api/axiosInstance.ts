@@ -1,7 +1,5 @@
 import axios from 'axios';
 
-// Instancia única de Axios — patrón Singleton
-// Toda la app usa esta instancia, no axios directamente
 const axiosInstance = axios.create({
   baseURL: 'https://pokeapi.co/api/v2',
   timeout: 10000,
@@ -10,18 +8,13 @@ const axiosInstance = axios.create({
   },
 });
 
-// Interceptor de request
-// Se ejecuta ANTES de cada petición — útil para agregar tokens de auth
 axiosInstance.interceptors.request.use(
   (config) => {
-    // Aquí podrías agregar: config.headers.Authorization = `Bearer ${token}`
     return config;
   },
   (error) => Promise.reject(error)
 );
 
-// Interceptor de response
-// Se ejecuta DESPUÉS de cada respuesta — manejo global de errores
 axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
